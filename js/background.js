@@ -3,9 +3,24 @@
  */
 function openMyPage() {
     console.log("injecting");
-    chrome.tabs.create({
-        "url": chrome.extension.getURL("html/managementpage.html")
-    });
+    
+    // クロームブラウザ
+    if (navigator.userAgent.indexOf("Chrome") > -1) {
+
+        chrome.tabs.create({
+            "url": chrome.extension.getURL("html/BookmarkManagement.html#id=0")
+        });
+
+    } else {
+        // firefoxブラウザ
+        chrome.tabs.create({
+            "url": chrome.extension.getURL("html/BookmarkManagement.html#id=root________")
+        });
+
+    }
+
+
+
 }
 
 

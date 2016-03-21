@@ -1,0 +1,290 @@
+header {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+
+    z-index: 4000;
+
+    -webkit-box-shadow: 0px 6px 3px -3px rgba(0,0,0,.2);
+    -moz-box-shadow: 0px 6px 3px -3px rgba(0,0,0,.2);
+    box-shadow: 0px 6px 3px -3px rgba(0,0,0,.2);
+
+    background:#00BCD4;
+    /* tmp */
+    /*background: blue;*/
+
+
+
+}
+
+/* パンくずリスト
+----------------------------------*/
+#breadcrumb_list_container {
+
+    height: 40px;
+    line-height:40px;
+
+    width: 90%;
+    float: left;
+
+}
+
+
+.breadcrumb_list {
+
+    margin: 0;
+
+    height: 40px;
+    line-heigth: 40px;
+
+    list-style: none;
+    overflow: hidden;
+    color: #aaa;
+
+
+    font-size: 10px;
+
+    background: #fff;
+    /*border-top: 1px solid #dedede;*/
+    /*border-bottom: 1px solid #dedede;*/
+
+    background: #B2EBF2;
+    background: none;
+
+}
+
+.breadcrumb_list li {
+
+    float: left;
+    margin-top: 5px;
+    line-height: 30px;
+    /*text-shadow: 0 1px 1px white;*/
+
+    /*border-top: 1px solid #dedede;*/
+    /*border-bottom: 1px solid #dedede;*/
+
+}
+
+.breadcrumb_list li a {
+
+
+
+    color: #aaa;
+    text-decoration: none;
+    padding: 0 0 0 40px;
+    display: block;
+    float: left;
+    background: #B2EBF2;
+}
+
+.breadcrumb_list li a::after {
+
+    position: relative;
+    display: block;
+    margin-top: -15px;
+    margin-left: auto;
+    margin-right: -25px;
+    height: 15px;
+    width: 30px;
+    content: " ";
+
+
+    -webkit-transform: skew(-35deg);
+    -moz-transform: skew(-35deg);
+    -ms-transform: skew(-35deg);
+    -o-transform: skew(-35deg);
+    transform: skew(-35deg);
+
+    background: #B2EBF2;
+
+    border-right: 1px solid #0097A7;
+
+}
+
+.breadcrumb_list li a::before {
+
+    float: right;
+    display: block;
+    margin-bottom: -15px;
+    margin-left: auto;
+    margin-right: -25px;
+    height: 15px;
+    width: 30px;
+    content: " ";
+
+    -webkit-transform: skew(35deg);
+    -moz-transform: skew(35deg);
+    -ms-transform: skew(35deg);
+    -o-transform: skew(35deg);
+    transform: skew(35deg);
+
+    background: #B2EBF2;
+    border-right: 1px solid #0097A7;
+
+}
+
+.breadcrumb_list li:first-child {
+    /*border-left: 1px solid #d6d6d6;*/
+}
+.breadcrumb_list li:first-child a {
+    padding-left: 10px;
+}
+
+.breadcrumb_list li:last-child {
+    /*padding-left: 40px;*/
+}
+
+.breadcrumb_list li:last-child a{
+
+    cursor: default;;
+    color: #333;
+
+    /*padding-left: 40px;*/
+}
+
+.breadcrumb_list li a:hover {
+    color: #333;
+}
+
+.breadcrumb_list li.current {
+    color: #fff;
+    background: #B2EBF2;
+    /*text-shadow: 0 1px 1px black;*/
+}
+
+.breadcrumb_list li.current a {
+    color: #fff;
+    background: #0097A7;
+}
+
+.breadcrumb_list li.current a::before,
+.breadcrumb_list li.current a::after {
+    background: #0097A7;
+}
+
+
+#header_menu {
+
+
+    float:right;
+
+    display: inline-block;
+
+    text-align: center;
+    
+    width: 10%;
+    height: 40px;
+    line-height: 40px;
+
+    padding-right:10px;
+
+}
+
+#header_menu #header_setting {
+
+    width: 80px;
+    margin-left:auto;
+
+}
+
+#header_menu .material-icons {
+
+    cursor: pointer;
+    font-size:22px;
+    color: #fff;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+#setting_menu_container {
+
+    display: none;
+
+    position: fixed;
+
+    top: 50px;
+    right: 10px;
+
+    width: 200px;
+
+    border: 1px solid rgba(0,0,100,.1);
+    background: #fff;
+
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;;
+
+    z-index: 10000;
+    /**/
+    /*background: red;*/
+
+}
+
+.settingMenuItem {
+
+
+    width: 200px;
+
+    height: 20px;
+    line-height: 20px;
+
+    -webkit-box-shadow: 0 1px 0 0 rgba(0, 0, 100, .1);
+    -moz-box-shadow: 0 1px 0 0 rgba(0, 0, 100, .1);
+    box-shadow: 0 1px 0 0 rgba(0, 0, 100, .1);
+
+}
+
+.settingMenuItem:last-child {
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+
+
+}
+
+.settingMenuItemBox {
+
+    float:left;
+
+    display: inline-block;
+
+    height:20px;
+    line-height:20px;
+
+    /**/
+    /*background: red;*/
+
+}
+
+.settingMenuItem .material-icons {
+
+    float: left;
+    font-size:18px;
+
+    line-height:20px;
+
+    margin-right:5px;
+}
+
+.settingMenuItemBox .setting_menu_title {
+
+    float: left;
+
+
+    height: 20px;
+    line-height: 20px;
+
+    font-size:14px;
+    color: rgba(0,0,50,.8);
+
+
+}
+
+.settingMenuItem:hover {
+    background: #B2EBF2;
+}

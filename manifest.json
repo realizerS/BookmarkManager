@@ -23,7 +23,11 @@
   },
 
   "permissions": [
-    "bookmarks"
+    "<all_urls>",
+    "tabs",
+    "bookmarks",
+    "contextMenus",
+    "storage"
   ],
 
 

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja" ng-app="BookmarkManager">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bookmark Manager</title>
+
+    <!--jquery -->
+    <script type="text/javascript" src="../js/jquery/jquery-2.2.1.min.js"></script>
+    <!--jquery ui -->
+    <script src="../js/jquery-ui-1.11.4/jquery-ui.js"></script>
+
+
+    <!-- script -->
+    <!-- ユーティリティ関数群 -->
+    <script type="text/javascript" src="../js/util.js"></script>
+
+    <!-- イベントリスナの登録関数 -->
+    <!-- 関数にしたのは非同期処理のコールバック内で呼び出したかったから -->
+    <script type="text/javascript" src="../js/eventListener.js"></script>
+
+    <!-- データ出力用関数 -->
+    <!-- データを出力し、イベントリスナを実際に登録する-->
+    <script type="text/javascript" src="../js/printer.js"></script>
+
+    <!-- 処理の流れをコントロールする -->
+    <!-- 初期化完了した後に呼び出される -->
+    <script type="text/javascript" src="../js/controller.js"></script>
+
+    <!-- 必要なデータを構成する -->
+    <script type="text/javascript" src="../js/initialize.js"></script>
+
+
+    <!-- デバッグ用 関数とか -->
+    <script type="text/javascript" src="../js/debug.js"></script>
+
+
+
+
+    <!-- css -->
+    <link rel="stylesheet" type="text/css" href="../css/normalize.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/global.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/nav.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/header.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/content.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/info_pane.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/footer.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/other.css"/>
+
+    <!-- dark theme css -->
+    <link rel="stylesheet" type="text/css" href="../css/darkTheme.css" />
+
+    <!-- icon -->
+    <link rel="stylesheet" href="../img/icons/octicons/octicons.css" />
+    <link rel="stylesheet" href="../img/icons/font-awesome-4.5.0/css/font-awesome.css"/>
+    <link rel="stylesheet" href="../img/icons/material-design-icons-2.2.0/iconfont/material-icons.css"/>
+
+
+
+
+</head>
+
+<body spellcheck="false">
+
+    <header>
+
+        <div id="breadcrumb_list_container">
+            <!-- パンくずリスト -->
+            <ol class="breadcrumb_list">
+            </ol>
+
+        </div>
+        <!-- header の 右側へ-->
+        <div id = "header_menu">
+            <div id="header_setting">
+                <i class="material-icons material-icons-search">search</i>
+                <i class="material-icons material-icons-settings">settings</i>
+            </div>
+        </div>
+
+        <div id= "setting_menu_container">
+            <div class="settingMenuItem setting_menu_auto_sort">
+                <a class="settingMenuItemBox" href="javascript:void(0);">
+                    <i class="material-icons">sort</i>
+                    <span class="setting_menu_title">自動分類を開始する</span>
+                </a>
+            </div>
+            <div class="settingMenuItem setting_menu_settings">
+                <a class="settingMenuItemBox" href="javascript:void(0);">
+                    <i class="material-icons">settings</i>
+                    <span class="setting_menu_title">設定</span>
+                </a>
+            </div>
+        </div>
+
+
+
+    </header>
+
+    <!-- 左側のフォルダのリスト -->
+    <nav id="sidebar">
+
+
+        <!-- フォルダのリスト -->
+        <div id="folder_list">
+
+        </div>
+
+
+        <!-- お気に入りフォルダのリスト 見出し-->
+        <div>
+
+        </div>
+        <!-- お気に入りフォルダのリスト -->
+        <div id="fav_folder_list">
+
+        </div>
+
+    </nav>
+
+    <!-- 検索ボックス(必要に応じて上部ににゅって出現させる) -->
+    <!-- cssは content.css に記述 -->
+    <div id = "search_bar">
+
+        <div id="search">
+            <i class="material-icons material-icons-search">search</i>
+            <form>
+                <div id="input_container">
+                    <input type="text" placeholder="SEARCH: you can use javascript regular expressions..."/>
+                </div>
+            </form>
+        </div>
+        <!-- 検索ボックスの右側へ検索対象を選ばせるセレクタを表示 -->
+        <div id="search_scope_selector_container">
+            <label for="search_scope_selector">検索対象：</label>
+            <select id = "search_scope_selector" name="search_scope">
+                <option value="current" selected>表示中のフォルダ</option>
+                <option value="recursive">再帰的に検索</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div id="content" class="cf">
+
+
+        <!-- メインのフォルダとブックマーク -->
+        <ul id = "content_list">
+
+
+        </ul>
+
+    </div>
+
+
+
+    <!-- 右からスライド式で出てくる奴 -->
+    <div id="info_pane" bookmark_id="">
+
+        <div id ="detail_header">
+            <img src=""/>
+        </div>
+
+        <div id="detail_main">
+            <div id="detail_operation_container">
+                <a id="detail_delete" href="javascript:void(0);">
+                    <i class="material-icons">delete</i>
+                    <span>削除</span>
+                </a>
+                <a id="detail_open_url" href="javascript:void(0);" target="_blank">
+                    <i class="material-icons">open_in_new</i>
+                    <span>リンクを開く</span>
+                </a>
+            </div>
+            <div id="detail_title_container">
+                <i class="material-icons">label_outline</i>
+                <div id="detail_title">タイトル</div>
+                <textarea class="" spellcheck="false" placeholder="タイトルを入力"></textarea>
+            </div>
+            <div id="detail_memo_container">
+                <i class="material-icons">create</i>
+                <div id="detail_memo">メモ</div>
+                <textarea class="" spellcheck="false" placeholder="メモを入力"></textarea>
+            </div>
+            <div id="detail_link_container">
+                <span class="material-icons">link</span>
+                <div id="detail_link">リンク</div>
+                <textarea class="" spellcheck="false" placeholder="ウェブアドレスを入力" aria-div="ウェブアドレスを入力"></textarea>
+            </div>
+
+            <div id="detail_date_container">
+                <div id="detail_created_date_container">
+
+                    <i class="material-icons">date_range</i>
+
+                    <div id="detail_created_date"></div>
+                    <!--<div id="detail_created_date">作成日時:xxx</div>-->
+
+                    <!--<textarea class="" spellcheck="false" placeholder="ウェブアドレスを入力" aria-div="ウェブアドレスを入力"></textarea>-->
+                </div>
+                <div id="detail_modified_date_container">
+
+                    <i class="material-icons">update</i>
+
+                    <div id="detail_modified_date"></div>
+                    <!--<div id="detail_modified_date">最終更新日時: xxx</div>-->
+
+                    <!--<textarea class="" spellcheck="false" placeholder="ウェブアドレスを入力" aria-div="ウェブアドレスを入力"></textarea>-->
+                </div>
+            </div>
+
+
+        </div>
+
+        <div id = "detail_footer">
+            <div id="detail_close">
+                閉じる
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+
+    </footer>
+
+
+    <!-- 右クリックのメニュー -->
+    <div id="menu">
+        <div class="menuItem menu_create">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">create_new_folder</i>
+                <span class="menu_title">新しいフォルダ</span>
+            </a>
+        </div>
+        <div class="menuItem menu_rename">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">create</i>
+                <span class="menu_title">名前の変更</span>
+            </a>
+        </div>
+        <div class="menuItem menu_cut">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">content_cut</i>
+                <span class="menu_title">切り取り</span>
+            </a>
+        </div>
+        <div class="menuItem menu_paste">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">content_paste</i>
+                <span class="menu_title">貼り付け</span>
+            </a>
+        </div>
+        <div class="menuItem menu_remove">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">delete</i>
+                <span class="menu_title">削除</span>
+            </a>
+        </div>
+        <div class="menuItem menu_toggle_fav">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">star</i>
+                <span class="menu_title">お気に入りに追加/削除</span>
+            </a>
+        </div>
+        <div class="menuItem menu_get_image">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">image</i>
+                <span class="menu_title">画像の再取得</span>
+            </a>
+        </div>
+        <div class="menuItem menu_reorder">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">reorder</i>
+                <span class="menu_title">並べ替える</span>
+            </a>
+            <i style="float:right;" class="material-icons">keyboard_arrow_right</i>
+            <!-- これはサブメニュー -->
+            <div class="submenu_container reorder_submenu_container">
+
+                <div class="menuItem menu_reorder_title">
+                    <a class="menuItemBox" href="javascript:void(0);">
+                        <i class="material-icons">label_outline</i>
+                        <span class="menu_title">タイトル順</span>
+                    </a>
+                </div>
+
+                <div class="menuItem menu_reorder_url">
+                    <a class="menuItemBox" href="javascript:void(0);">
+                        <i class="material-icons">link</i>
+                        <span class="menu_title">URL順</span>
+                    </a>
+                </div>
+
+                <div class="menuItem menu_reorder_added_date">
+                    <a class="menuItemBox" href="javascript:void(0);">
+                        <i class="material-icons">date_range</i>
+                        <span class="menu_title">登録日時順</span>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="menuItem menu_close">
+            <a class="menuItemBox" href="javascript:void(0);">
+                <i class="material-icons">close</i>
+                <span class="menu_title">閉じる</span>
+            </a>
+        </div>
+    </div>
+
+
+    <div id = "drag_flame">
+
+    </div>
+
+
+    <!-- クローン用オブジェクト -->
+    <div style="display: none;" id="cloneItems">
+
+        <!-- パンくずリストのアイテム -->
+        <li class="breadcrumb_list_item nub" folder_id="" _id="">
+            <a href="javascript:void(0);" class="title"></a>
+        </li>
+
+        <!--各フォルダから作られるリスト-->
+        <div class="sidebar_item_container nub" folder_id="" _id="">
+            <div class="sidebar_icon_container">
+                <!--開くアイコン-->
+                <i class="material-icons material-icons-keyboard-arrow-right">keyboard_arrow_right</i>
+                <!--閉じるアイコン-->
+                <i class="material-icons material-icons-keyboard-arrow-down">keyboard_arrow_down</i>
+            </div>
+            <!-- フォルダ名 -->
+            <div class="sidebar_folder_name_container">
+                <span class="title editable">item1</span>
+            </div>
+        </div>
+
+        <!--子供フォルダ-->
+        <div class="sidebar_child_item_container" parent_id="">
+
+        </div>
+
+        <!-- 左のサイドバーに追加するお気に入りのブックマークフォルダ -->
+        <!-- 階層構造では無いので、開閉アイコンは不要。後々のためにアイコンは一応つけとく -->
+        <div class="sidebar_fav_item_container nub" folder_id="" _id="">
+            <div class="sidebar_fav_icon_container">
+                <i class="material-icons">favorite</i>
+            </div>
+            <!-- フォルダ名 -->
+            <div class="sidebar_fav_folder_name_container">
+                <span class="title editable">item1</span>
+            </div>
+        </div>
+
+
+        <!-- フォルダ -->
+        <li id="folder_forClone" class="folder li_content nub" folder_id="" _id="">
+            <a href="javascript:void(0);">
+                <span class="folder_icon_container">
+                    <i class="material-icons handle">folder</i>
+                    <i class="material-icons favorite">star</i>
+                    <!--<i class="material-icons" style="position: absolute; right: 0; bottom: 0; font-size: 40px; color: #727272;">star</i>-->
+                </span>
+                <!--<span class="octicon octicon-file-directory handle"></span>-->
+            </a>
+            <br>
+            <span class="title handle editable" contenteditable="false">title</span>
+        </li>
+
+
+        <!-- アイテム -->
+        <li id="item_forClone" class="item li_content nub" item_id="" _id="">
+            <a href="javascript:void(0);" url="">
+                <img class="handle" src=""/>
+                <!--<span class="octicon octicon-globe handle"></span>-->
+            </a>
+            <br>
+            <span class="title handle editable" contenteditable="false">title</span>
+        </li>
+
+
+        <!--&lt;!&ndash; 左のナビの各アイテム &ndash;&gt;-->
+        <!--<li tabindex="0" class="sidebarFolder collapsed" draggable="true" rel="lw75bca28993b057359df131b2d01379">-->
+            <!--<div class="folder-container">-->
+                <!--<div>-->
+                    <!--<span class="folder-icon"></span>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</li>-->
+        <!---->
+
+
+    </div>
+
+
+    <script src="../js/app.js"></script>
+
+
+
+</body>
+
+</html>

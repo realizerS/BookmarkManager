@@ -1,0 +1,221 @@
+/* 右クリックメニュー */
+#menu {
+
+    display:none;
+
+    position: fixed;
+
+    top: 20px;
+    left: 20px;
+
+    width: 200px;
+
+    border: 1px solid rgba(0,0,100,.1);
+
+    background: #fff;
+
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;;
+
+    z-index: 10000;
+
+}
+
+/* サブメニューのフレーム */
+.submenu_container {
+
+    display:none;
+
+    position: absolute;
+
+    top: 20px;
+    left: 198px;
+
+    width: 200px;
+
+    border: 1px solid rgba(0,0,100,.1);
+
+    background: #fff;
+
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;;
+
+    z-index: 10000;
+
+}
+
+.menuItem {
+
+    width: 200px;
+    height: 20px;
+
+    line-height: 20px;
+
+    -webkit-box-shadow: 0 1px 0 0 rgba(0, 0, 100, .1);
+    -moz-box-shadow: 0 1px 0 0 rgba(0, 0, 100, .1);
+    box-shadow: 0 1px 0 0 rgba(0, 0, 100, .1);
+
+
+}
+.menuItem:last-child {
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+
+
+}
+
+.menuItem.menu_invalid {
+    cursor: default;
+}
+
+.menuItemBox {
+    display: inline-block;
+
+    height:20px;
+    line-height:20px;
+
+    /**/
+    /*background: red;*/
+
+}
+.menuItem.menu_invalid .menuItemBox {
+    cursor: default;
+}
+
+.menuItem .material-icons {
+
+    height: 20px;
+    line-height:20px;
+
+    font-size:18px;
+    color: rgba(0,0,50,.8);
+    width: 24px;
+
+    margin-left: 4px;
+
+    vertical-align: middle;
+
+
+
+}
+.menuItem.menu_invalid .material-icons {
+
+    color: rgba(0,0,20,.2);
+
+}
+
+.menuItem .menu_title {
+
+    vertical-align: middle;
+
+    height: 20px;
+    line-height: 20px;
+
+    font-size:14px;
+    color: rgba(0,0,50,.8);
+
+}
+.menuItem.menu_invalid .menu_title {
+    color: rgba(0,0,20,.2);
+}
+
+.menuItem:hover {
+    background: #B2EBF2;
+}
+
+.menuItem.menu_invalid:hover {
+    background: rgba(0,0,0,0);
+}
+
+/* ドラッグしてる時のコンテナ */
+#draggingContainer {
+
+    background: rgba(0,151, 167, .1);
+
+    max-width: 48%;
+
+    align-content:center;
+
+    border: 1px solid #0097A7;
+
+    -webkit-border-radius:6px;
+    -moz-border-radius:6px;
+    border-radius:6px;
+
+}
+#draggingContainer .selected {
+
+    width: 150px;
+    height: 100px;
+    align-content:center;
+
+    /**/
+    /*background: red;*/
+    
+}
+#draggingContainer .folder .folder_icon_container {
+
+    height: 48px;
+    line-height:48px;
+
+    /**/
+    /*background: purple;*/
+
+}
+#draggingContainer .material-icons {
+    font-size:48px;
+}
+#draggingContainer img {
+    width: 60px;
+    height: 45px;
+}
+#draggingContainer .title {
+
+    font-size:12px;
+    /**/
+    /*background: palegoldenrod;*/
+
+}
+
+/* ドラッグで表示するフレーム */
+#drag_flame {
+
+    display: none;
+
+    z-index: 20000;
+    position: absolute;
+
+    opacity:.2;
+    background: #B2EBF2;
+
+    border: 1px solid #0097A7;
+
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 6px;;
+
+    /*top: 20px;*/
+    /*left: 40px;*/
+    /*width: 50px;*/
+    /*height: 50px;*/
+
+}
+
+/*クリアフィックス*/
+.cf:before,
+.cf:after {
+    content: " ";
+    display: table;
+}
+
+.cf:after {
+    clear: both;
+}
+
+.cf {
+    *zoom: 1;
+}

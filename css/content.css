@@ -1,0 +1,483 @@
+#content {
+
+    z-index: 3000;
+
+    position: absolute;
+
+    top: 80px;
+    left: 200px;
+    right: 0;
+
+    /*bottom をしていしないことで、中身を含むようなサイズにできる*/
+
+    /*tmp*/
+    /*background: red;*/
+
+}
+
+#search_bar {
+
+    z-index: 3100;
+    position: fixed;
+
+    display: inline-block;
+    top: 0;
+    height: 40px;
+    left: 200px;
+    right: 0;
+
+    -webkit-box-shadow: 0 6px 3px -3px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 6px 3px -3px rgba(0,0,0,.2);
+    box-shadow: 0 6px 3px -3px rgba(0,0,0,.2);
+
+    background:#00BCD4;
+
+}
+
+#search {
+
+    display: inline-block;
+    width: 560px;
+    height: 40px;
+    line-height: 40px;
+
+    padding-left:25px;
+
+
+    /*一時的に*/
+    /*background:red;*/
+
+}
+
+#search .material-icons {
+
+    display: inline-block;
+
+    font-size: 22px;
+    color: #fff;
+
+    vertical-align: middle;
+    
+    margin-right:10px;
+
+}
+
+#search form {
+
+    display: inline-block;
+    border: none;
+
+    width: 480px;
+
+    line-height:30px;
+
+    padding-left:10px;
+    padding-right:10px;
+
+    background: rgba(0,150, 136, .3)
+    /*-webkit-border-radius: 4px;*/
+    /*-moz-border-radius: 4px;*/
+    /*border-radius: 20px;;*/
+
+    /*一時的に*/
+    /*background: #888;*/
+
+}
+
+#search form #input_container {
+
+    width: 100%;
+    height:100%;
+
+    outline: none;
+    /*tmp*/
+    /*background:red;*/
+
+}
+
+#search form #input_container input {
+
+    width:100%;
+    top: 10px;
+    height:30px;
+
+    color: #fff;
+
+    background: rgba(0, 0, 0, 0);
+
+    outline: none;
+    border: none;
+
+}
+
+#search form input::-webkit-input-placeholder {
+    color: #fff;
+    font-weight: normal;
+}
+#search form input:-ms-input-placeholder {
+    color: #fff;
+    font-weight: normal;
+}
+#search form input::-moz-placeholder {
+    color: #fff;
+    font-weight: normal;
+}
+
+#search_scope_selector_container {
+    display: inline-block;
+}
+#search_scope_selector_container label {
+
+    font-size:14px;
+    color: #fff;
+}
+
+#search_scope_selector_container select {
+
+    font-size:14px;
+
+    color: #fff;
+
+    background: rgba(0,150, 136, .3);
+    border: none;
+    outline:none;
+
+    -moz-appearance: none;
+    -webkit-appearance: none;
+
+}
+
+
+
+/*フォルダの情報のとこ*/
+
+#folder_info_container {
+
+    /**/
+    /*background: red;*/
+}
+
+#folder_title_button_container {
+
+    height: 40px;
+    /*background: red;*/
+}
+
+#folder_title_container {
+
+    display: inline-block;
+    height: 40px;
+    width: 300px;
+    /**/
+    /*background: blue;*/
+
+}
+#folder_title_container h2 {
+
+    margin: 0;
+    margin-left:10px;
+
+    font-style: italic;
+    height: 40px;
+    line-height:40px;
+
+}
+#folder_create_button {
+
+    cursor: pointer;
+    display: inline-block;
+    float: right;
+
+    width: 150px;
+    margin-left:auto;
+
+    height:40px;
+    line-height:40px;
+
+    text-align: center;
+
+    background: #B6B6B6;
+
+    margin-right:30px;
+
+}
+#folder_create_button:hover {
+    background: #727272;
+}
+#folder_create_button span {
+
+    color: #fff;;
+
+}
+#folder_delete_button {
+
+    cursor: pointer;
+    display: inline-block;
+    float: right;
+
+    width: 150px;
+    margin-left:auto;
+
+    height:40px;
+    line-height:40px;
+
+    text-align: center;
+
+    background: #B6B6B6;
+
+    margin-right:100px;
+}
+#folder_delete_button:hover {
+    background: #727272;
+}
+#folder_delete_button span {
+
+    color: #fff;;
+
+}
+
+#folder_info_main_container {
+
+    padding: 20px;
+
+    /**/
+    /*background: azure;*/
+
+}
+
+#folder_icon_container {
+
+    display: inline-block;
+    margin-right:10px;
+    /**/
+    /*background: green;*/
+}
+
+#folder_icon_container .material-icons{
+
+    font-size:48px;
+    color: #727272;
+
+    /**/
+    /*background: hotpink;*/
+}
+
+#folder_date_memo_container {
+
+    display: inline-block;
+    vertical-align: middle;
+
+    width: 600px;
+
+    /**/
+    /*background: peru;*/
+}
+
+#created_date_container {
+
+    padding: 10px;
+    padding-left:0;
+    font-style: italic;
+    display: inline-block;
+
+}
+#created_date_container span {
+
+    font-size:14px;
+    color: #B6B6B6;
+
+}
+#modified_date_container {
+
+    padding: 10px;
+    font-style: italic;
+    display: inline-block;
+}
+#modified_date_container span {
+
+    font-size:14px;
+    color: #B6B6B6;
+
+}
+
+#folder_info_memo_container {
+
+
+}
+#folder_info_memo_container textarea {
+    font-size:14px;
+    width: 100%;
+    resize: none;
+    border: none;
+    background: none;
+}
+#folder_info_memo_container textarea:hover {
+    background: #B2EBF2;
+}
+
+#folder_info_memo_container textarea:focus {
+
+    border: 1px solid #0097A7;
+    background: #fff;
+}
+
+
+
+/* フォルダとブックマークの情報 */
+.folder,
+.item {
+
+    position: relative;
+    
+    display: inline-block;
+    float: left;
+    height: 220px;
+    text-align: center;
+    vertical-align: middle;
+    width: 270px;
+
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    /*以下は一時的に*/
+    /*background: purple;*/
+    /*-webkit-border-radius: 3px;*/
+    /*-moz-border-radius: 3px;*/
+    /*border-radius: 20px;;*/
+
+}
+
+.folder .folder_icon_container {
+
+    position: relative;
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    vertical-align: middle;
+
+}
+/* itemのocticonはimgへ変更した */
+.folder .material-icons,
+.item .material-icons
+{
+
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+
+    font-size: 100px;
+    color: #727272;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+}
+.folder .material-icons.favorite {
+
+    display: none;
+
+    color: #FFFFFF;
+
+    position: absolute;
+
+    bottom: 47px;
+    left: 20px;
+
+    line-height: inherit;
+
+    font-size: 40px;
+
+}
+
+.item img {
+
+    width: 200px;
+    height: 150px;
+
+    border: 1px solid #aaaaaa;
+
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+
+}
+
+.folder .title,
+.item .title {
+
+    position: relative;
+
+    max-width:90%;
+
+    cursor: pointer;
+
+    display: inline-block;
+
+    overflow: hidden;
+
+    max-height: 3.7em;
+
+    padding: 6px;
+
+    font-size:14px;
+
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    /*以下は一時的*/
+    /*background:red;*/
+}
+
+.folder.selected .material-icons:not(.favorite),
+.item.selected .material-icons {
+
+    color: #009688;
+
+}
+
+.item.selected img {
+
+    border: 3px solid #009688;
+
+}
+
+.folder.selected .title,
+.item.selected .title {
+
+    z-index: 3000;
+
+    max-height: 10.1em;
+    background: #009688;
+    color: #fff;
+}
+
+.folder .title:focus,
+.item .title:focus {
+
+    outline: none;
+    border: 2px solid #009688;
+
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;;
+
+}
+
+.folder.drop_target .material-icons {
+    color: #009688;
+}
+
+.folder.drop_target .title {
+    background: #009688;
+}
+
