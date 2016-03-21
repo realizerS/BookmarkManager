@@ -20,10 +20,6 @@ function doneInitialize() {
     //メインコンテンツの描画
     printBookmarks(bookmarkTree.children);
 
-    // コンテンツ上部にフォルダの情報を描画
-    printDirInfo(bookmarkTree);
-
-
     // パンくずリスト
     printBreadcrumbList(bookmarkTree);
 

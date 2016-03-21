@@ -164,13 +164,10 @@ function repaintFolderListAndContent(dirId) {
 // パンくずリストを作る
 function printBreadcrumbList(dir) {
 
-    var listItem = $("#cloneItems .breadcrumb_list_item").clone(true);
-    listItem.attr("folder_id", dir.id);
-    listItem.attr("_id", dir.id);
+    var listItem = cloneBreadcrumbListItem(dir);
 
     if (dir.parentId != null) {
 
-        listItem.find("a").html(dir.title)
         $("#breadcrumb_list_container .breadcrumb_list").prepend(listItem);
 
         chrome.bookmarks.get(
@@ -187,7 +184,6 @@ function printBreadcrumbList(dir) {
 
         // ルート要素にたどり着いた時。再帰は終了する。
 
-        listItem.find("a").html("ROOT")
         $("#breadcrumb_list_container .breadcrumb_list").prepend(listItem);
 
         $("#breadcrumb_list_container .current").removeClass("current");
@@ -198,26 +194,6 @@ function printBreadcrumbList(dir) {
 }
 
 
-
-// メインペインの上部にディレクトリの詳細を表示
-function printDirInfo(dir) {
-
-
-    $("#folder_title_container h2").html(dir.title);
-
-    if (dir.dateAdded != null) {
-        var created_date = new Date();
-        created_date.setTime(parseInt(dir.dateAdded))
-        $("#created_date_container span").html("作成日時: " + created_date.toLocaleDateString() );
-
-    }
-    if (dir.dateGroupModified != null) {
-        var modified_date = new Date();
-        modified_date.setTime(parseInt(dir.dateGroupModified))
-        $("#modified_date_container span").html("最終更新日時: " + modified_date.toLocaleDateString());
-    }
-
-}
 
 // bookmarks is an array of bookmarks, may be null.
 // appendTarget is an jQuery obj for append cloned object.
@@ -231,10 +207,8 @@ function printBookmarksInSidebar(bookmark, appendTarget) {
 
             if (isDirectory(bookmark)) {
 
-                var clone = $("#cloneItems .sidebar_item_container").clone(true);
-                $(clone).find(".title").html(bookmark.title);
-                $(clone).attr("folder_id", bookmark.id);
-                $(clone).attr("_id", bookmark.id);
+                var clone = cloneSidebarFolder(bookmark);
+
                 clone.appendTo(appendTarget);
 
                 var childContainer = $("#cloneItems .sidebar_child_item_container").clone(true);
@@ -272,21 +246,16 @@ function printFavoriteBookmarks() {
 
     var appendTarget = $("#fav_folder_list");
     
-    favList = localStorage.favorite;
+    var favList = JSON.parse(localStorage.favorite);
 
-
-    if (favList == null) {
+    if (favList == null || favList.length === 0) {
         return ;
     }
 
-    favList = JSON.parse(favList);
-
     favList.forEach(function (fav) {
 
-        var clone = $("#cloneItems .sidebar_fav_item_container").clone(true);
-        $(clone).find(".title").html(fav.title);
-        $(clone).attr("folder_id", fav.id);
-        $(clone).attr("_id", fav.id);
+        var clone = cloneSidebarFavFolder(fav);
+
         clone.appendTo(appendTarget);
 
     })
@@ -306,35 +275,13 @@ function printBookmarks(bookmarks) {
 
             if (isDirectory(bookmark)) {
 
-                var item = $("#folder_forClone").clone(true);
-                item.removeAttr("id");
-                item.attr("folder_id", bookmark.id);
-                item.attr("_id", bookmark.id);
-
-                item.attr("created_date", bookmark.dateAdded);
-                item.attr("modified_date", bookmark.dateGroupModified);
-
-                $(item).find(".title").html(bookmark.title);
+                var item = cloneFolder(bookmark)
 
                 item.appendTo(appendTarget);
 
             } else {
 
-                var item = $("#item_forClone").clone(true);
-                item.removeAttr("id");
-                $(item).find("a").attr("url", bookmark.url)
-                item.attr("item_id", bookmark.id);
-                item.attr("_id", bookmark.id);
-
-                // chrome:// とかも送信しちゃうけどまぁいいか。
-                $(item).find("img").attr("src", heartRailsCaptureApiUrl + bookmark.url);
-
-                item.attr("created_date", bookmark.dateAdded);
-                item.attr("modified_date", bookmark.dateGroupModified);
-
-                $(item).find(".title").html(bookmark.title);
-
-                $(item).find(".title").html(bookmark.title);
+                var item = cloneItem(bookmark); 
 
                 item.appendTo(appendTarget);
 
@@ -354,23 +301,13 @@ function printBookmarksRecursively(bookmark, re) {
         // 正規表現に合致したら表示
         if (re.test(bookmark.title)) {
 
-            var item = $("#folder_forClone").clone(true);
-            item.removeAttr("id");
-            item.attr("folder_id", bookmark.id);
-            item.attr("_id", bookmark.id);
-
-            item.attr("created_date", bookmark.dateAdded);
-            item.attr("modified_date", bookmark.dateGroupModified);
-
-            $(item).find(".title").html(bookmark.title);
+            var item = cloneFolder(bookmark);
 
             if ($("#content_list .folder").length > 0) {
                 item.insertAfter($("#content_list .folder").last());
             } else {
                 item.prependTo($("#content_list"));
             }
-
-
 
         }
 
@@ -382,29 +319,13 @@ function printBookmarksRecursively(bookmark, re) {
                 printBookmarksRecursively(child, re);
 
             });
-
-
         }
 
     } else {
 
         // 正規表現に合致したらアイテムを表示
         if (re.test(bookmark.title)) {
-            var item = $("#item_forClone").clone(true);
-            item.removeAttr("id");
-            $(item).find("a").attr("url", bookmark.url)
-            item.attr("item_id", bookmark.id);
-            item.attr("_id", bookmark.id);
-
-            // chrome:// とかも送信しちゃうけどまぁいいか。
-            $(item).find("img").attr("src", heartRailsCaptureApiUrl + bookmark.url);
-
-            item.attr("created_date", bookmark.dateAdded);
-            item.attr("modified_date", bookmark.dateGroupModified);
-
-            $(item).find(".title").html(bookmark.title);
-
-            $(item).find(".title").html(bookmark.title);
+            var item = cloneItem(bookmark);
 
             item.appendTo($("#content_list"));
 

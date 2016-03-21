@@ -237,6 +237,84 @@ function changePasteState() {
 
 }
 
+
+// フォルダをクローンして必要な項目に値をセット
+// 引数に項目値がある
+// 引数はbookmarkTreeNode
+function cloneFolder(bookmarkFolder) {
+
+    var clone = $("#folder_forClone").clone(true);
+    clone.removeAttr("id");
+    clone.attr("folder_id", bookmarkFolder.id);
+    clone.attr("_id", bookmarkFolder.id);
+
+    clone.attr("created_date", bookmarkFolder.dateAdded);
+    clone.attr("modified_date", bookmarkFolder.dateGroupModified);
+
+    $(clone).find(".title").html(bookmarkFolder.title);
+
+    return clone;
+
+}
+
+function cloneItem(bookmark) {
+
+    var clone = $("#item_forClone").clone(true);
+    clone.removeAttr("id");
+    $(clone).find("a").attr("url", bookmark.url)
+    clone.attr("item_id", bookmark.id);
+    clone.attr("_id", bookmark.id);
+
+    // chrome:// とかも送信しちゃうけどまぁいいか。
+    $(clone).find("img").attr("src", heartRailsCaptureApiUrl + bookmark.url);
+
+    clone.attr("created_date", bookmark.dateAdded);
+    clone.attr("modified_date", bookmark.dateGroupModified);
+
+    $(clone).find(".title").html(bookmark.title);
+
+    return clone;
+}
+
+// サイドバーに表示するコンテナを作る
+function cloneSidebarFolder(bookmarkFolder) {
+
+    var clone = $("#cloneItems .sidebar_item_container").clone(true);
+    $(clone).find(".title").html(bookmarkFolder.title);
+    $(clone).attr("folder_id", bookmarkFolder.id);
+    $(clone).attr("_id", bookmarkFolder.id);
+
+    return clone;
+}
+
+function cloneSidebarFavFolder(bookmarkFolder) {
+
+    var clone = $("#cloneItems .sidebar_fav_item_container").clone(true);
+    $(clone).find(".title").html(bookmarkFolder.title);
+    $(clone).attr("folder_id", bookmarkFolder.id);
+    $(clone).attr("_id", bookmarkFolder.id);
+
+    return clone;
+
+}
+
+// パンくずリストはルートのアイテムを作る場合があるのでタイトルで分岐させる
+function cloneBreadcrumbListItem(bookmarkFolder) {
+
+    var listItem = $("#cloneItems .breadcrumb_list_item").clone(true);
+    listItem.attr("folder_id", bookmarkFolder.id);
+    listItem.attr("_id", bookmarkFolder.id);
+
+    if (bookmarkFolder.parentId != null) {
+        listItem.find("a").html(bookmarkFolder.title)
+    } else {
+        listItem.find("a").html("ROOT")
+    }
+
+    return listItem;
+
+}
+
 function createFolder() {
 
     var parentId = getPrintFolderId();
@@ -251,40 +329,21 @@ function createFolder() {
             if (result != null) {
 
                 // draggable と droppable を削除
-                $("#content_list .li_content").draggable("destroy");
-                $("#content_list .folder .material-icons").droppable("destroy");
-                $("#folder_list .sidebar_item_container").droppable("destroy");
-                $("#fav_folder_list .sidebar_fav_item_container").droppable("destroy");
+                removeDragAndDropListener()
 
                 // メインのコンテンツ部分へフォルダを追加
-
                 var prependTarget = $("#content_list");
 
-                var item = $("#folder_forClone").clone(true);
-                item.removeAttr("id");
-                item.attr("folder_id", result.id);
-                item.attr("_id", result.id);
-
-                var created_date = new Date();
-                created_date.setTime(parseInt(result.dateAdded))
-                if (!isNaN(created_date.getTime())) {
-                    item.attr("created_date", created_date.toLocaleDateString());
-                }
-                var modified_date = new Date();
-                modified_date.setTime(parseInt(result.dateGroupModified))
-                if (!isNaN(modified_date.getTime())) {
-                    item.attr("modified_date", modified_date.toLocaleDateString());
-                }
-                $(item).find(".title").html(result.title);
+                var item = cloneFolder(result)
 
                 item.prependTo(prependTarget);
 
                 $(".selected").removeClass("selected active");
 
-                $("#content_list .folder").first().find(".title").attr("contenteditable", "true");
+                $(item).find(".title").attr("contenteditable", "true");
 
                 oldTitle = result.title;
-                $("#content_list .folder").first().find(".title").focus();
+                item.find(".title").focus();
                 document.execCommand('selectAll', false, null)
 
                 // サイドのフォルダリストへフォルダを追加
@@ -295,12 +354,9 @@ function createFolder() {
                 });
 
                 // 作ったフォルダ要素に値を設定
-                item = $("#cloneItems .sidebar_item_container").clone(true);
-                $(item).find(".title").html("new folder");
-                $(item).attr("folder_id", result.id);
-                $(item).attr("_id", result.id);
-                $(item).find(".material-icons").css("display","none")
-                item.prependTo(prependTarget);
+                var sidebarItem = cloneSidebarFolder(result);
+
+                sidebarItem.prependTo(prependTarget);
 
 
                 // 親フォルダに必要なら開閉アイコンを表示させる
@@ -315,9 +371,9 @@ function createFolder() {
                 // 作ったフォルダの子要素を格納するためのコンテナを追加する
                 var childContainer = $("#cloneItems .sidebar_child_item_container").clone(true);
                 childContainer.attr("parent_id", result.id)
-                childContainer.insertAfter(item);
+                childContainer.insertAfter(sidebarItem);
 
-                // リスナを作る
+                // リスナを再設定
                 setDragAndDropListener();
 
             } else {
@@ -463,61 +519,23 @@ function paste() {
 
                     result = result[0];
 
-
                     if (isDirectory(result)) {
 
-                        var item = $("#folder_forClone").clone(true);
-                        item.removeAttr("id");
-                        item.attr("folder_id", result.id);
-                        item.attr("_id", result.id);
-
-                        var created_date = new Date();
-                        created_date.setTime(parseInt(result.dateAdded))
-                        if (!isNaN(created_date.getTime())) {
-                            item.attr("created_date", created_date.toLocaleDateString());
-                        }
-                        var modified_date = new Date();
-                        modified_date.setTime(parseInt(result.dateGroupModified))
-                        if (!isNaN(modified_date.getTime())) {
-                            item.attr("modified_date", modified_date.toLocaleDateString());
-                        }
-                        $(item).find(".title").html(result.title);
+                        var item = cloneFolder(result);
 
                         item.prependTo($("#content_list"));
 
                     } else {
 
-                        var item = $("#item_forClone").clone(true);
-                        item.removeAttr("id");
-                        $(item).find("a").attr("url", result.url)
-                        item.attr("item_id", result.id);
-                        item.attr("_id", result.id);
-
-                        // chrome:// とかも送信しちゃうけどまぁいいか。
-                        $(item).find("img").attr("src", heartRailsCaptureApiUrl + result.url);
-
-                        var created_date = new Date();
-                        created_date.setTime(parseInt(result.dateAdded))
-                        if (!isNaN(created_date.getTime())) {
-                            item.attr("created_date", created_date.toLocaleDateString());
-                        }
-                        var modified_date = new Date();
-                        modified_date.setTime(parseInt(result.dateGroupModified))
-                        if (!isNaN(modified_date.getTime())) {
-                            item.attr("modified_date", modified_date.toLocaleDateString());
-                        }
-
-                        $(item).find(".title").html(result.title);
-
-                        $(item).find(".title").html(result.title);
+                        var item = cloneItem(result);
 
                         item.prependTo($("#content_list"));
 
                     }
-
                 }
             )
         }
+
 
 
         // 移動
@@ -656,6 +674,24 @@ function reorderAssoc(list) {
 
 }
 
+// chrome.bookmarks.moveの処理の完了を待って再帰
+function reorderAsync(list, parentId, idx) {
+
+    if (list.length  == idx) {
+        repaintFolderListAndContent(getPrintFolderId());
+    } else {
+        chrome.bookmarks.move(
+            list[idx].key,
+            {parentId: parentId, index: idx},
+            function (result) {
+                reorderAsync(list, parentId, idx+1)
+            }
+        )
+
+    }
+
+}
+
 function reorderByTitle() {
 
     var index = 0;
@@ -673,31 +709,13 @@ function reorderByTitle() {
     });
     reorderAssoc(itemIdTitleList);
 
-    folderIdTitleList.forEach(function (folderIdTitle) {
-        chrome.bookmarks.move(
-            folderIdTitle.key,
-            {parentId: parentId, index: index},
-            function (result) {
-
-            }
-        );
-        index++;
+    var list = folderIdTitleList;
+    itemIdTitleList.forEach(function (listItem) {
+        list.push(listItem)
     });
 
-    var len = itemIdTitleList.length;
-    itemIdTitleList.forEach(function (itemIdTitle, idx) {
-        // ラスト一回のループはコールバック内でrepaintを呼ぶ
-        chrome.bookmarks.move(
-            itemIdTitle.key,
-            {parentId: parentId, index: index},
-            function (result) {
-                if (len - 1 == idx) {
-                    repaintFolderListAndContent(parentId);
-                }
-            }
-        );
-        index++;
-    })
+    reorderAsync(list, parentId, 0);
+
 
 }
 
@@ -721,31 +739,13 @@ function reorderByUrl() {
     reorderAssoc(itemIdUrlList);
 
 
-    folderIdTitleList.forEach(function (folderIdTitle) {
-        chrome.bookmarks.move(
-            folderIdTitle.key,
-            {parentId: parentId, index: index},
-            function (result) {
-
-            }
-        );
-        index++;
+    var list = folderIdTitleList;
+    itemIdUrlList.forEach(function (listItem) {
+        list.push(listItem)
     });
 
-    var len = itemIdUrlList.length;
-    itemIdUrlList.forEach(function (itemIdTitle, idx) {
-        // ラスト一回のループはコールバック内でrepaintを呼ぶ
-        chrome.bookmarks.move(
-            itemIdTitle.key,
-            {parentId: parentId, index: index},
-            function (result) {
-                if (len - 1 == idx) {
-                    repaintFolderListAndContent(parentId);
-                }
-            }
-        );
-        index++;
-    });
+    reorderAsync(list, parentId, 0);
+
 
 }
 
@@ -755,46 +755,26 @@ function reorderByAddedDate() {
     var parentId = getPrintFolderId();
 
     // urlで並べ替えるときフォルダにはurlが無いので結局タイトル順
-    var folderIdTitleList = [];
+    var folderIdAddedDateList = [];
     $.each($("#content_list .folder"), function (idx, folder) {
-        folderIdTitleList.push({key: $(folder).attr("folder_id"), value: parseInt($(folder).attr("created_date"))});
+        folderIdAddedDateList.push({key: $(folder).attr("folder_id"), value: parseInt($(folder).attr("created_date"))});
     });
-    reorderAssoc(folderIdTitleList);
+    reorderAssoc(folderIdAddedDateList);
 
 
-    var itemIdUrlList = [];
+    var itemIdAddedDateList = [];
     $.each($("#content_list .item"), function (idx, item) {
-        itemIdUrlList.push({key: $(item).attr("item_id"), value: parseInt($(item).attr("created_date"))});
+        itemIdAddedDateList.push({key: $(item).attr("item_id"), value: parseInt($(item).attr("created_date"))});
     });
-    reorderAssoc(itemIdUrlList);
+    reorderAssoc(itemIdAddedDateList);
 
 
-    folderIdTitleList.forEach(function (folderIdTitle) {
-        chrome.bookmarks.move(
-            folderIdTitle.key,
-            {parentId: parentId, index: index},
-            function (result) {
-
-            }
-        );
-        index++;
+    var list = folderIdAddedDateList;
+    itemIdAddedDateList.forEach(function (listItem) {
+        list.push(listItem)
     });
 
-    var len = itemIdUrlList.length;
-    itemIdUrlList.forEach(function (itemIdTitle, idx) {
-        // ラスト一回のループはコールバック内でrepaintを呼ぶ
-        chrome.bookmarks.move(
-            itemIdTitle.key,
-            {parentId: parentId, index: index},
-            function (result) {
-                if (len - 1 == idx) {
-                    repaintFolderListAndContent(parentId);
-                }
-            }
-        );
-        index++;
-    });
-
+    reorderAsync(list, parentId, 0);
 }
 
 // e: keydown event
