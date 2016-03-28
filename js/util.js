@@ -25,58 +25,6 @@ function getPrintFolderId() {
 
 }
 
-
-// クッキー保存 setCookie(クッキー名, クッキーの値, クッキーの有効日数); //
-function setCookie(c_name, value, expiredays) {
-    // pathの指定
-    var path = location.pathname;
-    // pathをフォルダ毎に指定する場合のIE対策
-    var paths = new Array();
-    paths = path.split("/");
-    if (paths[paths.length - 1] != "") {
-        paths[paths.length - 1] = "";
-        path = paths.join("/");
-    }
-    // 有効期限の日付
-    var extime = new Date().getTime();
-    var cltime = new Date(extime + (60 * 60 * 24 * 1000 * expiredays));
-    var exdate = cltime.toUTCString();
-    // クッキーに保存する文字列を生成
-    var s = "";
-    s += c_name + "=" + escape(value);// 値はエンコードしておく
-    s += "; path=" + path;
-    if (expiredays) {
-        s += "; expires=" + exdate + "; ";
-    } else {
-        s += "; ";
-    }
-    // クッキーに保存
-    document.cookie = s;
-}
-
-// クッキーの値を取得 getCookie(クッキー名); //
-function getCookie(c_name) {
-    var st = "";
-    var ed = "";
-    if (document.cookie.length > 0) {
-        // クッキーの値を取り出す
-        st = document.cookie.indexOf(c_name + "=");
-        if (st != -1) {
-            st = st + c_name.length + 1;
-            ed = document.cookie.indexOf(";", st);
-            if (ed == -1) ed = document.cookie.length;
-            // 値をデコードして返す
-            return unescape(document.cookie.substring(st, ed));
-        }
-    }
-    return "";
-}
-
-
-function clearBreadcrumbList() {
-    $("#breadcrumb_list_container .breadcrumb_list").empty();
-}
-
 function clearContent() {
     $("#content_list").empty();
 }
@@ -88,16 +36,16 @@ function clearFolderList() {
 function scrollToVisible(obj) {
 
     // 現在のスクロール量
-    scrollTop = window.scrollY;
+    var scrollTop = window.scrollY;
     // 画面の高さ
-    displayHeight = $(window).height();
+    var displayHeight = $(window).height();
 
     // 対象オブジェクトの上の位置
-    objOffsetTop = obj.offset().top;
+    var objOffsetTop = obj.offset().top;
 
     // 本当はobj.outerHeight({margin: true)で取得したかったんだけども。
     // li要素だとダメなの?
-    objHeight = obj.height() + parseInt(obj.css("margin-top").slice(0,-2)) + parseInt(obj.css("margin-bottom").slice(0,-2));
+    var objHeight = obj.height() + parseInt(obj.css("margin-top").slice(0,-2)) + parseInt(obj.css("margin-bottom").slice(0,-2));
 
 
 
@@ -118,11 +66,52 @@ function scrollToVisible(obj) {
 
 }
 
+function scrollToVisibleSide(obj) {
 
-function isDirectory(bookmarks) {
+    var scrollTop = $("#folder_list").scrollTop()
+
+    var offset = obj.offset();
+    var objTop = offset.top;
+    var objHeight = obj.height();
 
 
-    if (bookmarks.dateGroupModified !== undefined || bookmarks.children !== undefined) {
+    // 上に見切れている場合
+    if (objTop -80 < 0) {
+        $("#folder_list").scrollTop(scrollTop - objHeight);
+    } else if (objTop > 380) {
+        $("#folder_list").scrollTop(scrollTop + objHeight);
+    }
+
+}
+
+function scrollToVisibleSideFav(obj) {
+
+    var scrollTop = $("#fav_folder_list").scrollTop()
+
+    var offset = obj.offset();
+    var objTop = offset.top;
+    var objHeight = obj.height();
+
+    var displayHeight = $(window).height();
+
+    console.log(displayHeight);
+
+    // 上に見切れている場合
+    if (objTop - 480 < 0) {
+        $("#fav_folder_list").scrollTop(scrollTop - objHeight);
+    } else if ( objTop > displayHeight - 50 ) {
+        $("#fav_folder_list").scrollTop(scrollTop + objHeight);
+    }
+
+}
+
+
+
+// ブックマークデータがディレクトリであるか否か
+function isDirectory(bookmark) {
+
+
+    if (bookmark.dateGroupModified !== undefined || bookmark.children !== undefined) {
         return true;
     } else {
         return false
@@ -131,9 +120,10 @@ function isDirectory(bookmarks) {
 
 }
 
-function hasChildren(bookmarks) {
+// ブックマークデータが子を持つか否か
+function hasChildren(bookmark) {
 
-    if (bookmarks.children !== undefined) {
+    if (bookmark.children !== undefined) {
         return true;
     } else {
         return false;
@@ -141,6 +131,7 @@ function hasChildren(bookmarks) {
 
 }
 
+// 選択範囲を削除
 function removeSelection() {
     
     if (window.getSelection) {
@@ -170,6 +161,7 @@ function isOverlap(left, top, width, height, itemLeft, itemTop, itemWidth, itemH
 
 }
 
+// posObjへitemの画像部分(フォルダアイコンかページの画像)のポジション情報(top, left, width, height)を格納
 function setItemPos (item, posObj) {
 
     if ($(item).hasClass("folder")) {
@@ -182,11 +174,11 @@ function setItemPos (item, posObj) {
 
     } else {
 
-        itemOffset = $(item).find("img").offset();
+        itemOffset = $(item).find(".page_image").offset();
         posObj.itemTop = itemOffset.top;
         posObj.itemLeft = itemOffset.left;
-        posObj.itemWidth = $(item).find("img").width();
-        posObj.itemHeight = $(item).find("img").height();
+        posObj.itemWidth = $(item).find(".page_image").width();
+        posObj.itemHeight = $(item).find(".page_image").height();
 
     }
 
@@ -196,7 +188,7 @@ function setItemPos (item, posObj) {
 function removeItemSelection () {
 
     $(".active").removeClass("active");
-    $("#content_list .li_content").removeClass("selected");
+    $("#content_list .item").removeClass("selected");
 
 }
 
@@ -204,29 +196,31 @@ function removeItemSelection () {
 function selectItem(target) {
 
     $("#content_list .active").removeClass("active");
-    $(target).closest("li").addClass("selected active");
+    $(target).closest(".nub").addClass("selected active");
 
 }
 
+// アイテムの選択状態を入れ替える
 function toggleItemSelection(target) {
 
-    if ($(target).closest("li").hasClass("selected")) {
+    if ($(target).closest(".nub").hasClass("selected")) {
 
-        $(target).closest("li").removeClass("selected");
+        $(target).closest(".nub").removeClass("selected");
 
         $("#content_list .active").removeClass("active");
         $("#content_list .selected").addClass("active")
 
     } else {
-        $(target).closest("li").addClass("selected");
+        $(target).closest(".nub").addClass("selected");
 
         $("#content_list .active").removeClass("active");
-        $(target).closest("li").addClass("active");
+        $(target).closest(".nub").addClass("active");
     }
 
 
 }
 
+// 貼り付け可能か否かを
 function changePasteState() {
 
     if (localStorage.cut.length > 0) {
@@ -257,6 +251,7 @@ function cloneFolder(bookmarkFolder) {
 
 }
 
+// ブックマークをクローンし、必要なデータを設定した上で返す
 function cloneItem(bookmark) {
 
     var clone = $("#item_forClone").clone(true);
@@ -266,7 +261,13 @@ function cloneItem(bookmark) {
     clone.attr("_id", bookmark.id);
 
     // chrome:// とかも送信しちゃうけどまぁいいか。
-    $(clone).find("img").attr("src", heartRailsCaptureApiUrl + bookmark.url);
+    $(clone).find(".page_image").attr("src", heartRailsCaptureApiUrl + bookmark.url);
+
+    if (bookmark.url.indexOf("chrome://") > -1) {
+        $(clone).find(".fvc").attr("src", hatenaFaviconApiUrl + "http://none");
+    } else {
+        $(clone).find(".fvc").attr("src", hatenaFaviconApiUrl + bookmark.url);
+    }
 
     clone.attr("created_date", bookmark.dateAdded);
     clone.attr("modified_date", bookmark.dateGroupModified);
@@ -287,6 +288,7 @@ function cloneSidebarFolder(bookmarkFolder) {
     return clone;
 }
 
+// サイドバーに表示するお気に入り用のコンテナを作る
 function cloneSidebarFavFolder(bookmarkFolder) {
 
     var clone = $("#cloneItems .sidebar_fav_item_container").clone(true);
@@ -315,6 +317,7 @@ function cloneBreadcrumbListItem(bookmarkFolder) {
 
 }
 
+// フォルダを作成する
 function createFolder() {
 
     var parentId = getPrintFolderId();
@@ -356,6 +359,8 @@ function createFolder() {
                 // 作ったフォルダ要素に値を設定
                 var sidebarItem = cloneSidebarFolder(result);
 
+                // 作ったフォルダにはまだ子要素は無いはずなので、アイコンは非表示に
+                sidebarItem.find(".material-icons").css("display", "none");
                 sidebarItem.prependTo(prependTarget);
 
 
@@ -422,6 +427,7 @@ function cut() {
     localStorage.cut = JSON.stringify(cutIdList)
 }
 
+// 貼り付けを行う
 function paste() {
 
     // フォルダへ貼り付けられない。
@@ -505,9 +511,9 @@ function paste() {
 
         // メインコンテンツ部分の変更
         // カットされたアイテムを消去
-        $.each($(".li_content"), function (idx, li_content) {
-            if ($(li_content).attr("_id") == cutId) {
-                $(li_content).remove();
+        $.each($(".item"), function (idx, item) {
+            if ($(item).attr("_id") == cutId) {
+                $(item).remove();
             }
         });
 
@@ -561,7 +567,7 @@ function remove(){
 
     var removeObj;
 
-    if ($(".active").hasClass("li_content")) {
+    if ($(".active").hasClass("item")) {
         removeObj = $("#content_list .selected")
     } else if ($(".active").hasClass("sidebar_item_container")) {
         removeObj = $(".active");
@@ -588,9 +594,9 @@ function remove(){
                         // 持たないなら削除可能
 
                         // メインコンテンツペインから削除
-                        $.each($(".li_content"), function (idx, li_content) {
-                            if ($(li_content).attr("_id") == id) {
-                                $(li_content).remove();
+                        $.each($(".item"), function (idx, item) {
+                            if ($(item).attr("_id") == id) {
+                                $(item).remove();
                             }
                         });
 
@@ -659,6 +665,7 @@ function remove(){
 
 // list は {key: xxx, value: xxx} というオブジェクトの配列
 // valueで並べ替え
+// re-order association listの略
 function reorderAssoc(list) {
 
     list.sort(function (a,b) {
@@ -694,7 +701,6 @@ function reorderAsync(list, parentId, idx) {
 
 function reorderByTitle() {
 
-    var index = 0;
     var parentId = getPrintFolderId();
 
     var folderIdTitleList = [];
@@ -704,7 +710,7 @@ function reorderByTitle() {
     reorderAssoc(folderIdTitleList);
 
     var itemIdTitleList = [];
-    $.each($("#content_list .item"), function (idx, item) {
+    $.each($("#content_list .bookmark"), function (idx, item) {
         itemIdTitleList.push({key: $(item).attr("item_id"), value: $(item).find(".title").html().toLocaleLowerCase()});
     });
     reorderAssoc(itemIdTitleList);
@@ -719,9 +725,9 @@ function reorderByTitle() {
 
 }
 
+// urlで並び替え。ただしフォルダはタイトル順
 function reorderByUrl() {
 
-    var index = 0;
     var parentId = getPrintFolderId();
 
     // urlで並べ替えるときフォルダにはurlが無いので結局タイトル順
@@ -733,7 +739,7 @@ function reorderByUrl() {
 
 
     var itemIdUrlList = [];
-    $.each($("#content_list .item"), function (idx, item) {
+    $.each($("#content_list .bookmark"), function (idx, item) {
         itemIdUrlList.push({key: $(item).attr("item_id"), value: $(item).find("a").attr("url")});
     });
     reorderAssoc(itemIdUrlList);
@@ -749,12 +755,11 @@ function reorderByUrl() {
 
 }
 
+// 作成日時順で並び替え
 function reorderByAddedDate() {
 
-    var index = 0;
     var parentId = getPrintFolderId();
 
-    // urlで並べ替えるときフォルダにはurlが無いので結局タイトル順
     var folderIdAddedDateList = [];
     $.each($("#content_list .folder"), function (idx, folder) {
         folderIdAddedDateList.push({key: $(folder).attr("folder_id"), value: parseInt($(folder).attr("created_date"))});
@@ -763,7 +768,7 @@ function reorderByAddedDate() {
 
 
     var itemIdAddedDateList = [];
-    $.each($("#content_list .item"), function (idx, item) {
+    $.each($("#content_list .bookmark"), function (idx, item) {
         itemIdAddedDateList.push({key: $(item).attr("item_id"), value: parseInt($(item).attr("created_date"))});
     });
     reorderAssoc(itemIdAddedDateList);
@@ -777,100 +782,8 @@ function reorderByAddedDate() {
     reorderAsync(list, parentId, 0);
 }
 
-// e: keydown event
-function keydownAtEditingTitle (e) {
 
-    // 編集中にエンターキー(確定した)
-    if (e.keyCode == KEYCODEENTER) {
-
-        var bookmark_id = $(".title:focus").closest(".nub").attr("_id");
-
-        var newTitle = $(".title:focus").html();
-
-        // 名前に変更がなければ終了
-        if (oldTitle == newTitle) {
-            $(".title:focus").closest(".nub").addClass("selected active");
-            $("span.editable").blur();
-            removeSelection();
-            $("span.editable").attr("contenteditable", "false");
-            return false;
-        }
-
-        // localStorageのfavoriteの値を必要に応じて更新
-        var favList = JSON.parse(localStorage.favorite);
-
-        if (favList == null) {
-            favList = [];
-        }
-
-        var len = favList.length;
-
-        for(var i = 0; i < len; i++) {
-            if (favList[i].id == bookmark_id) {
-                favList[i] = {id: bookmark_id, title: newTitle};
-                localStorage.favorite = JSON.stringify(favList);
-                break;
-            }
-        }
-
-
-        chrome.bookmarks.update(
-            bookmark_id,
-            {title: newTitle},
-            function (result) {
-                console.log(result);
-                if (result != null) {
-                    $(".title:focus").closest(".nub").addClass("selected active");
-                    $("span.editable").blur();
-                    removeSelection();
-                    $("span.editable").attr("contenteditable", "false");
-
-
-                    $(".nub").filter(function (idx) {
-                        return $(this).attr("_id") == bookmark_id
-                    }).find(".title").html(newTitle);
-
-                } else {
-                    $(".title:focus").html(oldTitle);
-                    $(".title:focus").closest(".nub").addClass("selected active");
-                    $("span.editable").blur();
-                    removeSelection();
-                    $("span.editable").attr("contenteditable", "false");
-                }
-            }
-        );
-
-        return false;
-
-    } else if (e.keyCode == KEYCODEESCAPE) {
-        // 編集中にエスケープキーでリネームを中止
-        $(".title:focus").html(oldTitle);
-        $(".title:focus").closest(".li_content").addClass("selected active");
-        $("span.editable").blur();
-        removeSelection();
-        $("span.editable").attr("contenteditable", "false");
-
-        return false;
-    }
-
-    return true;
-
-}
-
-// delete key 押下時の処理
-function keydownDelete() {
-
-    remove()
-
-}
-
-function keydownSpace() {
-
-    toggleInfoPaneOpenState();
-
-}
-
-
+// 右の情報表示部分の表示非表示の切替
 function toggleInfoPaneOpenState() {
 
     if (parseInt($("#info_pane").css("right").slice(0,-2)) < 0) {
@@ -879,12 +792,14 @@ function toggleInfoPaneOpenState() {
 
             var active = $(".selected")
 
+            var bookmark_id = active.attr("_id");
+
+            $("#info_pane").attr("bookmark_id", bookmark_id);
+
             // ブックマークid と ヘッダーに 画像を設定
             if (active.hasClass("folder")) {
-                $("#info_pane").attr("bookmark_id", active.attr("folder_id"));
                 $("#info_pane #detail_header img").css("display", "none");
             } else if (active.hasClass("item")) {
-                $("#info_pane").attr("bookmark_id", active.attr("item_id"));
                 $("#info_pane #detail_header img").css("display", "inline-block");
                 $("#info_pane #detail_header img").attr("src", $(".selected img").attr("src"));
             }
@@ -892,8 +807,26 @@ function toggleInfoPaneOpenState() {
 
             // タイトル
             $("#detail_title_container textarea").val(active.find(".title").html());
-            // メモ
-            $("#detail_memo_container textarea").val();
+
+            // タグ
+            var tagListStr = localStorage.tag;
+            if (tagListStr != null) {
+
+                var tagList = JSON.parse(localStorage.tag);
+
+                var tagArray = tagList[bookmark_id];
+                if (tagArray != null) {
+                    $("#detail_tag_container textarea").val(tagArray.join(" "));
+                } else {
+                    $("#detail_tag_container textarea").val("");
+                }
+
+
+            } else {
+                $("#detail_tag_container textarea").val("");
+            }
+
+
             // url
             $("#detail_link_container textarea").val(active.find("a").attr("url"));
 
@@ -938,46 +871,6 @@ function toggleInfoPaneOpenState() {
 
 }
 
-function keydownEnter() {
-
-    if ($(".folder.selected").length == 1) {
-
-        var printFolderId = $(".folder.selected").attr("folder_id")
-
-        history.pushState(null, null, "#id=" + printFolderId );
-
-        repaintContent(printFolderId);
-
-        return false;
-
-
-    }
-
-    // アイテムのみが複数選択されていた場合はすべてタブで開く
-    if ($(".folder.selected").length == 0 && $(".item.selected").length > 0) {
-
-        $.each($(".item.selected"), function (idx, obj) {
-            chrome.tabs.create({url: $(obj).find("a").attr("url"), active: false});
-        });
-
-        return false;
-
-    }
-
-
-}
-
-function keydownShiftEnter() {
-
-    if ($(".folder.selected").length == 1) {
-
-        var folderId = $(".folder.selected").attr("folder_id");
-        var folderTitle = $(".folder.selected").find(".title").html();
-
-        toggleFavoriteState(folderId, folderTitle);
-
-    }
-}
 
 // idとタイトルを入力に、お気に入りの状態を切替
 function toggleFavoriteState(folderId, folderTitle) {
@@ -1027,218 +920,95 @@ function toggleFavoriteState(folderId, folderTitle) {
 
 }
 
-function keydownShiftLeft() {
 
-    var active = $(".active");
+// 正規表現を引数に現在表示中のフォルダを探索
+// 正規表現のvalidateとかはしてない
+function searchCurrentFolder(re) {
 
-    if (active.prevAll(":visible").first().length !== 0) {
-        if (active.prevAll(":visible").first().hasClass("selected")) {
+    // 空文字から作られる正規表現は true であることに注意
+    // ただ検索文字列が空文字の場合re = ""なのでこの分岐が可能
+    try {
 
-            active.removeClass("selected active");
-            active.prevAll(":visible").first().addClass("active");
+        if (re) {
+
+            $.each($("#content_list .folder"), function () {
+
+                if (re.test($(this).find(".title").html())) {
+                    $(this).css("display", "inline-block");
+                } else {
+                    $(this).css("display", "none");
+                }
+
+            });
+
+            $.each($("#content_list .item"), function () {
+
+                if (re.test($(this).find(".title").html())) {
+                    $(this).css("display", "inline-block");
+                } else {
+                    $(this).css("display", "none");
+                }
+
+            });
+
 
         } else {
-            active.prevAll(":visible").first().addClass("selected active");
-            active.removeClass("active");
+
+            $(".folder").css("display", "inline-block");
+            $(".item").css("display", "inline-block");
         }
 
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
-
-    } else {
-        active.addClass("selected active");
-    }
-
-}
-
-function keydownLeft() {
-
-    $(".selected").removeClass("selected");
-    var active = $(".active");
-
-    if (!active.length > 0) {
-        $(".li_content:visible").first().addClass("selected active");
+    } catch (e) {
         return false;
     }
-    if (active.prevAll(":visible").first().length !== 0) {
-        active.prevAll(":visible").first().addClass("selected active");
-        active.removeClass("active");
-
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
-
-    } else {
-        active.addClass("selected active");
-    }
 
 }
 
-function keydownShiftRight() {
+// 正規表現を引数に現在表示中のフォルダを探索
+// 正規表現のvalidateとかはしてない
+function searchAll(re) {
 
-    var active = $(".active");
-    if (active.nextAll(":visible").first().length !== 0) {
+    // 空文字から作られる正規表現は true であることに注意
+    // ただ検索文字列が空文字の場合re = ""なのでこの分岐が可能
 
-        if (active.nextAll(":visible").first().hasClass("selected")) {
-
-            active.removeClass("selected active");
-            active.nextAll(":visible").first().addClass("active");
-
-        } else {
-            active.nextAll(":visible").first().addClass("selected active");
-            active.removeClass("active");
-        }
-
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
-
-    } else {
-        active.addClass("selected active");
+    var tagList = {};
+    var tagListStr = localStorage.tag;
+    if (tagListStr != null) {
+        tagList = JSON.parse(tagListStr);
     }
 
-}
+    if (re) {
 
-function keydownRight() {
+        removeDragAndDropListener()
 
-    $(".selected").removeClass("selected");
-    var active = $(".active");
+        clearContent();
 
-    if (!active.length > 0) {
-        $(".li_content:visible").first().addClass("selected active");
-        return false;
-    }
-    if (active.nextAll(":visible").first().length !== 0) {
-        active.nextAll(":visible").first().addClass("selected active");
-        active.removeClass("active");
+        chrome.bookmarks.getTree(
+            function (results) {
 
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
+                // firefox用に余計なブックマークデータを裂くj
+                var results = results[0];
+                for (var i = results.children.length - 1; i >= 0; i-- ) {
 
-    } else {
-        active.addClass("selected active");
-    }
+                    if (!results.children[i].title.length > 0) {
 
-}
+                        results.children.splice(i,1);
 
-function keydownShiftUp() {
+                    }
+                }
 
-    var active = $(".active");
-    var up = active;
-    var count = Math.floor($("#content_list").width() / $("#folder_forClone").width());
-    for (var i = 0; i < count; i++) {
-        up = up.prevAll(":visible").first();
-    }
-    if (up.length !== 0) {
+                printBookmarksRecursivelyByAll(results, re, tagList)
+                setDragAndDropListener();
 
-        var up = active;
-        for (var i = 0; i < count; i++) {
-
-            if (up.prevAll(":visible").first().hasClass("selected")) {
-                up.removeClass("selected");
-            } else {
-                up.prevAll(":visible").first().addClass("selected");
             }
-            up = up.prevAll(":visible").first();
-        }
-
-        up.addClass("selected active");
-        active.removeClass("active")
-
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
-
+        );
 
     } else {
-        active.addClass("selected active");
+        searchExecuted = false;
+        repaintContent(getPrintFolderId());
     }
 
 }
-
-function keydownUp() {
-
-    $(".selected").removeClass("selected");
-    var active = $(".active");
-
-    var up = active;
-    var count = Math.floor($("#content_list").width() / $("#folder_forClone").width());
-    for (var i = 0; i < count; i++) {
-        up = up.prevAll(":visible").first();
-    }
-    if (up.length !== 0) {
-        up.addClass("selected active");
-        active.removeClass("active")
-
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
-
-    } else {
-        active.addClass("selected active");
-    }
-
-}
-
-function keydownShiftDown() {
-
-    var active = $(".active");
-    var down = active;
-    var count = Math.floor($("#content_list").width() / $("#folder_forClone").width());
-    for (var i = 0; i < count; i++) {
-        down = down.nextAll(":visible").first();
-    }
-    if (down.length !== 0) {
-
-        var down = active;
-        for (var i = 0; i < count; i++) {
-
-            if (down.nextAll(":visible").first().hasClass("selected")) {
-                down.removeClass("selected");
-            } else {
-                down.nextAll(":visible").first().addClass("selected");
-            }
-            down = down.nextAll(":visible").first();
-
-        }
-
-        down.addClass("active");
-        active.removeClass("active")
-
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
-
-
-    } else {
-        active.addClass("selected active");
-    }
-}
-
-function keydownDown() {
-
-    $(".selected").removeClass("selected");
-    var active = $(".active");
-
-    var down = active;
-    var count = Math.floor($("#content_list").width() / $("#folder_forClone").width());
-    for (var i = 0; i < count; i++) {
-        down = down.nextAll(":visible").first();
-    }
-    if (down.length !== 0) {
-        down.addClass("selected active");
-        active.removeClass("active")
-
-        // 新しくアクティブになった要素が画面に入るようにする
-        scrollToVisible($(".active"));
-
-    } else {
-        active.addClass("selected active");
-    }
-
-}
-
-function keydownF2 () {
-
-    rename();
-
-}
-
 
 // 正規表現を引数に現在表示中のフォルダを探索
 // 正規表現のvalidateとかはしてない
@@ -1307,7 +1077,100 @@ function searchCurrentFolderRecursive(re) {
 
     } else {
 
+        searchExecuted = false;
         repaintContent(getPrintFolderId());
+
+    }
+
+}
+function searchCurrentFolderByTag(re) {
+
+    // 空文字から作られる正規表現は true であることに注意
+    // ただ検索文字列が空文字の場合re = ""なのでこの分岐が可能
+
+    var tagList = {};
+    var tagListStr = localStorage.tag;
+    if (tagListStr != null) {
+        tagList = JSON.parse(tagListStr);
+    }
+
+    try {
+
+        if (re) {
+
+            $.each($("#content_list .item"), function (idx, item) {
+
+                var _id = $(item).attr("_id");
+                var match = false;
+
+                var tagListArray = tagList[_id];
+
+                if (tagListArray != null) {
+
+                    var len = tagListArray.length;
+                    for (var i = 0; i < len; i++) {
+                        if (re.test(tagListArray[i])) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+
+
+
+                if (match) {
+                    $(item).css("display", "inline-block");
+                } else {
+                    $(item).css("display", "none");
+                }
+
+            });
+
+        } else {
+
+            $(".item").css("display", "inline-block");
+
+        }
+
+    } catch (e) {
+        return false;
+    }
+
+}
+
+function searchCurrentFolderRecursiveByTag(re) {
+
+    // 空文字から作られる正規表現は true であることに注意
+    // ただ検索文字列が空文字の場合re = ""なのでこの分岐が可能
+
+    var tagList = {};
+    var tagListStr = localStorage.tag;
+    if (tagListStr != null) {
+        tagList = JSON.parse(tagListStr);
+    }
+
+    if (re) {
+
+        removeDragAndDropListener()
+
+        clearContent();
+
+        chrome.bookmarks.getSubTree(
+            getPrintFolderId(),
+            function (results) {
+
+                printBookmarksRecursivelyByTag(results[0], re, tagList)
+                setDragAndDropListener();
+
+            }
+        );
+
+
+    } else {
+
+        searchExecuted = false;
+        repaintContent(getPrintFolderId());
+
     }
 
 }
@@ -1371,17 +1234,20 @@ function toggleSearchBarShowState() {
 
 
         // 検索バーが隠れた時は要素をすべて表示する
-        repaintContent(getPrintFolderId());
+        if (searchExecuted) {
+            searchExecuted = false;
+            repaintContent(getPrintFolderId());
+        }
 
         //
-        // $(".li_content").css("display", "inline-block");
+        // $(".item").css("display", "inline-block");
 
 
     } else {
         // 下へ表す
 
         $("#search_bar").animate({top: 40}, "fast");
-
+        $("#search_bar input").focus();
     }
 
 }
@@ -1389,6 +1255,27 @@ function toggleSearchBarShowState() {
 function openSettingMenu() {
 
     $("#setting_menu_container").css("display", "block");
+
+}
+
+// jquery ui関連のリスナを削除する
+function removeDragAndDropListener() {
+
+    if ($("#content_list .item").data('ui-draggable')) {
+        $("#content_list .item").draggable("destroy");
+    }
+    if ($("#content_list .folder .material-icons").data('ui-droppable')) {
+        $("#content_list .folder .material-icons").droppable("destroy");
+    }
+    if ($("#folder_list .sidebar_item_container").data('ui-droppable')) {
+        $("#folder_list .sidebar_item_container").droppable("destroy");
+    }
+    if ($("#fav_folder_list .sidebar_fav_item_container").data('ui-droppable')) {
+        $("#fav_folder_list .sidebar_fav_item_container").droppable("destroy");
+    }
+    if ($("#fav_folder_list").data('ui-sortable')) {
+        $("#fav_folder_list").sortable("destroy");
+    }
 
 }
 

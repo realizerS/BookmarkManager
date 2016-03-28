@@ -48,6 +48,7 @@
 
 .menuItem {
 
+    cursor: pointer;
     width: 200px;
     height: 20px;
 
@@ -169,7 +170,7 @@
 #draggingContainer .material-icons {
     font-size:48px;
 }
-#draggingContainer img {
+#draggingContainer .page_image {
     width: 60px;
     height: 45px;
 }
@@ -194,14 +195,28 @@
 
     border: 1px solid #0097A7;
 
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
     border-radius: 6px;;
 
     /*top: 20px;*/
     /*left: 40px;*/
     /*width: 50px;*/
     /*height: 50px;*/
+
+}
+
+/* sortable の placeholder */
+.sortable_placeholder {
+
+    height: 2em;
+
+    border: 1px dashed #0097A7;
+
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+
 
 }
 

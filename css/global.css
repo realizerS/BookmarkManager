@@ -7,12 +7,12 @@
 
 }
 
-a:link {
+a {
+
     font-weight: bold;
     text-decoration: none;
-}
-a {
     outline: none;
+
 }
 
 body {

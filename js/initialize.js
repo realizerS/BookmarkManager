@@ -81,6 +81,8 @@ var unfiledBookmarks; // 未整理のブックマーク
 
 var heartRailsCaptureApiUrl = "http://capture.heartrails.com/400x300?";
 
+var hatenaFaviconApiUrl = "http://favicon.hatena.ne.jp/?url=";
+
 var bookmarkTree;
 
 var oldTitle = "";

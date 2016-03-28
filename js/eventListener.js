@@ -3,7 +3,7 @@
  */
 function draggableHelper() {
 
-    var selected = $('.li_content.selected');
+    var selected = $('.item.selected');
     if (selected.length === 0) {
         selected = $(this);
     } else if (selected.length === 1) {
@@ -17,7 +17,7 @@ function draggableHelper() {
 
 function onDropFoledr(event, ui) {
 
-    if (!$(event.target).closest(".li_content").hasClass("selected")) {
+    if (!$(event.target).closest(".item").hasClass("selected")) {
         ui.helper.remove();
 
         var parentId = $("#content_list .drop_target").attr("folder_id");
@@ -208,7 +208,6 @@ function onDropSidebarItemContainer(event, ui) {
 
 function onDropSidebarFavItemContainer(event, ui) {
 
-
     isDropToFavList = []
 
     var parentId = $(event.target).attr("folder_id");
@@ -314,7 +313,7 @@ var isDragging = false;
 var isDropToFavList = [];
 function setDragAndDropListener() {
 
-    $("#content_list .li_content").draggable({
+    $("#content_list .item").draggable({
         revert: true,
         scroll: true,
         handle: ".handle",
@@ -361,7 +360,38 @@ function setDragAndDropListener() {
     });
 
 
+    $("#fav_folder_list").sortable({
+        placeholder: "sortable_placeholder",
+        start: function (e, ui) {
+            isDragging = true;
+            $("#fav_folder_list .sidebar_fav_item_container").droppable("disable");
+
+        },
+        stop: function (e, ui) {
+            isDragging = false;
+            $("#fav_folder_list .sidebar_fav_item_container").droppable("enable");
+
+        },
+        update: function (e, ui) {
+
+            var favList = [];
+
+            $.each($("#fav_folder_list .sidebar_fav_item_container"), function (idx, fav_item_container) {
+                favList.push({
+                    id: $(fav_item_container).attr("_id"),
+                    title: $(fav_item_container).find(".title").html()
+                });
+            });
+
+            localStorage.favorite = JSON.stringify(favList);
+
+        }
+    });
+
 }
+
+
+var searchExecuted = false;
 
 function setListener() {
 
@@ -486,29 +516,60 @@ function setListener() {
         if (value) {
             re = new RegExp(value, "i");
         }
+        searchExecuted = true;
 
         switch($("#search_scope_selector").val()) {
 
+            case "all":
+                searchAll(re);
+                break;
             case "current":
                 searchCurrentFolder(re);
                 break;
             case "recursive":
                 searchCurrentFolderRecursive(re);
                 break;
+            case "tag":
+                searchCurrentFolderByTag(re);
+                break;
+            case "tag_recursive":
+                searchCurrentFolderRecursiveByTag(re);
+                break;
             default:
                 break;
 
         }
+        return false;
+    });
 
+    $("#search_scope_selector").change(function (e) {
 
+        switch ($("#search_scope_selector").val()) {
+
+            case "all":
+            case "current":
+            case "recursive":
+            case "tag":
+            case "tag_recursive":
+            default:
+                if (searchExecuted) {
+                    searchExecuted = false;
+                    repaintContent(getPrintFolderId());
+                }
+                break;
+
+        }
 
         return false;
 
     });
 
 
+
     // マウスをドラッグして範囲を作る
     var isMouseDown = false;
+    var isCtrl = false;
+    var isRightClick = false;
     var paintFlame = false;
     var startX;
     var startY;
@@ -532,6 +593,7 @@ function setListener() {
         // 右クリックは無視
         // contextmenuイベントの方で処理
         if (e.button === 2) {
+            isRightClick = true;
             return true;
         }
         // メニューの項目をクリックした場合はメニュー項目に対するリスナで処理する。ここでは何もしない
@@ -558,16 +620,17 @@ function setListener() {
 
             // コントロールキーが押されておらずに
             // 選択された要素をクリック(つまりドラッグを開始しようとしている)
-            if (!e.ctrlKey && $(e.target).closest("li").hasClass("selected")) {
+            if (!e.ctrlKey && $(e.target).closest(".item").hasClass("selected")) {
                 return true;
             }
 
             // コントロールキーが押されていれば複数選択
             // 押されていなければ
             if (!e.ctrlKey) {
-                removeItemSelection()
+                removeItemSelection();
                 selectItem(e.target);
             } else {
+                isCtrl = true;
                 toggleItemSelection(e.target)
             }
 
@@ -620,7 +683,7 @@ function setListener() {
             var width = Math.abs(startX - endX);
             var height = Math.abs(startY - endY);
 
-            $(".li_content:visible").filter(function (idx) {
+            var selectedItems = $(".item:visible").filter(function (idx) {
 
 
                 var itemImagePos = {};
@@ -639,12 +702,20 @@ function setListener() {
                 return isOverlap(left, top, width, height, itemImagePos.itemLeft, itemImagePos.itemTop, itemImagePos.itemWidth, itemImagePos.itemHeight) ||
                     isOverlap(left, top, width, height, itemLeft2, itemTop2, itemWidth2, itemHeight2)
 
-            }).addClass("selected");
+            });
 
+            selectedItems.addClass("selected");
+            selectedItems.last().addClass("active");
 
+        } else if (!isCtrl && !isRightClick) {
+            removeItemSelection();
+            $(e.target).closest(".handle").closest(".item").addClass("selected active");
         }
         isMouseDown = false;
+        isCtrl = false;
+        isRightClick = false;
         paintFlame = false;
+
     });
 
 
@@ -769,7 +840,10 @@ function setListener() {
         // フォーカスがどっかにあたっている時の処理
         // このときはtrueを返すことで通常の処理も行う
         if ($("input:focus").length > 0) {
-            console.log("focus")
+            return true;
+        }
+
+        if ($("textarea:focus").length > 0) {
             return true;
         }
 
@@ -784,7 +858,7 @@ function setListener() {
             switch (e.keyCode) {
 
                 case KEYCODEA:
-                    $("#content_list .li_content:visible").addClass("selected")
+                    $("#content_list .item:visible").addClass("selected")
                     break;
                 case KEYCODES:
                 case KEYCODEF:
@@ -879,8 +953,124 @@ function setListener() {
             clearTimeout(openReorderSubMenuTimer)
 
         }
-    )
+    );
 
+
+    var oldTitle = "";
+    // info_paneからタイトルを変更する
+    $("#detail_title_container textarea").focus(function (e) {
+
+        oldTitle = $("#detail_title_container textarea").val();
+
+    });
+
+    // info_paneからタイトルを変更する
+    $("#detail_title_container textarea").blur(function (e) {
+
+
+        var bookmark_id = $("#info_pane").attr("bookmark_id");
+
+        var newTitle = $("#detail_title_container textarea").val();
+
+        if (oldTitle == newTitle) {
+            return false;
+        }
+
+        chrome.bookmarks.update(
+            bookmark_id,
+            {title: newTitle},
+            function (result) {
+                console.log(result);
+                if (result != null) {
+
+                    // localStorageのfavoriteの値を必要に応じて更新
+                    var favList = JSON.parse(localStorage.favorite);
+
+                    if (favList == null) {
+                        favList = [];
+                    }
+
+                    var len = favList.length;
+
+                    for(var i = 0; i < len; i++) {
+                        if (favList[i].id == bookmark_id) {
+                            favList[i] = {id: bookmark_id, title: newTitle};
+                            localStorage.favorite = JSON.stringify(favList);
+                            break;
+                        }
+                    }
+
+                    // 表示中の名前を変更
+                    $(".nub").filter(function (idx) {
+                        return $(this).attr("_id") == bookmark_id
+                    }).find(".title").html(newTitle);
+
+
+                } else {
+                    $("#detail_title_container textarea").val(oldTitle);
+                }
+            }
+        );
+
+
+    });
+
+    var oldTagStr = "";
+    // info_paneからタイトルを変更する
+    $("#detail_tag_container textarea").focus(function (e) {
+
+        oldTagStr = $("#detail_tag_container textarea").val();
+
+    });
+
+    // info_paneからタイトルを変更する
+    $("#detail_tag_container textarea").blur(function (e) {
+
+
+        var bookmark_id = $("#info_pane").attr("bookmark_id");
+
+        var newTagStr = $("#detail_tag_container textarea").val();
+
+        if (oldTagStr == newTagStr) {
+            return false;
+        }
+
+
+        var tagList = {};
+
+        var tagListStr = localStorage.tag;
+        if (tagListStr != null) {
+            tagList = JSON.parse(tagListStr);
+        }
+
+
+        // タグが空の場合は削除
+        if (newTagStr == "") {
+            delete tagList[bookmark_id];
+
+            // ローカルストレージのタグリストを更新
+            localStorage.tag = JSON.stringify(tagList);
+
+            return false;
+        }
+
+
+        // タグの文字列を配列に変更後、重複を削除
+        var newTagArray = newTagStr.split(" ");
+        var newTagArraySet = newTagArray.filter(function (tag ,idx, self) {
+            return self.indexOf(tag) === idx;
+        });
+
+        // タグリストを更新
+        tagList[bookmark_id] = newTagArraySet;
+
+        // ローカルストレージのタグリストを更新
+        localStorage.tag = JSON.stringify(tagList);
+
+
+
+    });
+    
 
 }
 

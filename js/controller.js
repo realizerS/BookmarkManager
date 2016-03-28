@@ -10,12 +10,8 @@ function doneInitialize() {
 
     history.pushState(null, null, "#id=" + ROOTID)
 
-
-    var folder_id = getPrintFolderId();
-
     // リスナの登録
     setListener();
-
 
     //メインコンテンツの描画
     printBookmarks(bookmarkTree.children);
@@ -42,8 +38,6 @@ $(window).on('popstate', function (e) {
     var printFolderId = getPrintFolderId();
 
     repaintContent(printFolderId);
-
-
 
 });
 

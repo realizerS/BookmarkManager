@@ -2,6 +2,13 @@
  * Created by realizerS on 16/03/15.
  */
 
+function changeCurrent(dirId) {
+
+    changeNavCurrent(dirId);
+    changeNavFavCurrent(dirId);
+
+}
+
 function changeNavCurrent(dirId) {
 
     $("#folder_list .current").removeClass("current");
@@ -29,29 +36,11 @@ function changeNavFavCurrent(dirId) {
 
 }
 
-function removeDragAndDropListener() {
-
-    if ($("#content_list .li_content").data('ui-draggable')) {
-        $("#content_list .li_content").draggable("destroy");
-    }
-    if ($("#content_list .folder .material-icons").data('ui-droppable')) {
-        $("#content_list .folder .material-icons").droppable("destroy");
-    }
-    if ($("#folder_list .sidebar_item_container").data('ui-droppable')) {
-        $("#folder_list .sidebar_item_container").droppable("destroy");
-    }
-    if ($("#fav_folder_list .sidebar_fav_item_container").data('ui-droppable')) {
-        $("#fav_folder_list .sidebar_fav_item_container").droppable("destroy");
-    }
-
-}
-
 // ページ内容(コンテンツの部分)を書き換える
 function repaintContent(dirId) {
 
     // 左のナビのcurrentクラスを更新
-    changeNavCurrent(dirId);
-    changeNavFavCurrent(dirId);
+    changeCurrent(dirId);
 
     // draggable と droppable を削除
     removeDragAndDropListener();
@@ -66,7 +55,6 @@ function repaintContent(dirId) {
 
             //printDirInfo(bookmarkTree)
 
-            clearBreadcrumbList();
             printBreadcrumbList(bookmarkTree);
             printBookmarks(bookmarkTree.children)
             setDragAndDropListener();
@@ -74,7 +62,6 @@ function repaintContent(dirId) {
         } else {
 
             chrome.bookmarks.get(dirId, function (bookmarks) {
-                clearBreadcrumbList();
                 //printDirInfo(bookmarks[0])
                 printBreadcrumbList(bookmarks[0])
                 setDragAndDropListener();
@@ -155,26 +142,32 @@ function repaintFolderListAndContent(dirId) {
     }
 
     // 左のナビのcurrentクラスを更新
-    changeNavCurrent(dirId);
-    changeNavFavCurrent(dirId);
+    changeCurrent(dirId);
 
 
 }
 
-// パンくずリストを作る
+// パンくずリストを作る(書き換える)
 function printBreadcrumbList(dir) {
 
-    var listItem = cloneBreadcrumbListItem(dir);
+    var bookmarkList = [];
+    bookmarkList.unshift(dir);
+
+    printBreadcrumbListIter(dir, bookmarkList);
+
+}
+
+function printBreadcrumbListIter(dir, bookmarkList) {
+
 
     if (dir.parentId != null) {
 
-        $("#breadcrumb_list_container .breadcrumb_list").prepend(listItem);
-
+        // 書き換えに必要なブックマークの情報を集める
         chrome.bookmarks.get(
             dir.parentId,
             function (bookmarks) {
-
-                printBreadcrumbList(bookmarks[0]);
+                bookmarkList.unshift(bookmarks[0]);
+                printBreadcrumbListIter(bookmarks[0], bookmarkList);
 
             }
         );
@@ -182,10 +175,44 @@ function printBreadcrumbList(dir) {
 
     } else {
 
-        // ルート要素にたどり着いた時。再帰は終了する。
+        // 再帰が終わった時にパンくずリストを作成する
+        var counter = 0;
+        bookmarkList.forEach(function (bookmark, idx) {
 
-        $("#breadcrumb_list_container .breadcrumb_list").prepend(listItem);
+            counter = idx;
+            var bookmark = bookmarkList[idx];
 
+            // パンくずリストのidx番目がある場合
+            if ($("#breadcrumb_list_container .breadcrumb_list_item").eq(idx)[0] != null) {
+
+                var itemTitle = $("#breadcrumb_list_container .breadcrumb_list_item").eq(idx).find(".title").html();
+                var itemId = $("#breadcrumb_list_container .breadcrumb_list_item").eq(idx).attr("_id");
+
+                if (
+                     itemTitle == "ROOT" ||
+                     ( itemTitle == bookmark.title && itemId == bookmark.id )
+                ) {
+                    // 何もしない
+                } else {
+                    // 内容の書き換え
+                    $("#breadcrumb_list_container .breadcrumb_list_item").eq(idx).attr("folder_id", bookmark.id);
+                    $("#breadcrumb_list_container .breadcrumb_list_item").eq(idx).attr("_id", bookmark.id);
+                    $("#breadcrumb_list_container .breadcrumb_list_item").eq(idx).find(".title").html(bookmark.title);
+                }
+
+
+            } else {
+
+                var listItem = cloneBreadcrumbListItem(bookmark);
+                $("#breadcrumb_list_container .breadcrumb_list").append(listItem);
+
+            }
+        });
+
+        // 余分なパンくずを消去
+        $("#breadcrumb_list_container .breadcrumb_list_item:gt(" + counter + ")").remove();
+
+        // 一番右のパンくずをカレントに
         $("#breadcrumb_list_container .current").removeClass("current");
         $("#breadcrumb_list_container .breadcrumb_list_item").last().addClass("current");
 
@@ -245,8 +272,13 @@ function printBookmarksInSidebar(bookmark, appendTarget) {
 function printFavoriteBookmarks() {
 
     var appendTarget = $("#fav_folder_list");
-    
-    var favList = JSON.parse(localStorage.favorite);
+
+    // 初期値はundefinedであることに注意
+    var favList = localStorage.favorite;
+
+    if (favList != null) {
+        favList = JSON.parse(localStorage.favorite);
+    }
 
     if (favList == null || favList.length === 0) {
         return ;
@@ -335,6 +367,129 @@ function printBookmarksRecursively(bookmark, re) {
 
 }
 
+function printBookmarksRecursivelyByTag(bookmark, re, tagList) {
+
+    var match = false;
+    var _id = bookmark.id;
+    var tagListArray = tagList[_id];
+
+    if (tagListArray != null) {
+        var len = tagListArray.length;
+        for (var i = 0; i < len; i++) {
+            if (re.test(tagListArray[i])) {
+                match = true;
+                break;
+            }
+        }
+    }
+
+
+    if (isDirectory(bookmark)) {
+
+        // 正規表現に合致したら表示
+        if (match) {
+
+            var item = cloneFolder(bookmark);
+
+            if ($("#content_list .folder").length > 0) {
+                item.insertAfter($("#content_list .folder").last());
+            } else {
+                item.prependTo($("#content_list"));
+            }
+
+        }
+
+
+        if (hasChildren(bookmark)) {
+
+            bookmark.children.forEach(function (child) {
+
+                printBookmarksRecursivelyByTag(child, re, tagList);
+
+            });
+        }
+
+    } else {
+
+        // 正規表現に合致したらアイテムを表示
+        if (match) {
+            var item = cloneItem(bookmark);
+
+            item.appendTo($("#content_list"));
+
+        }
+
+    }
+
+}
+
+function printBookmarksRecursivelyByAll(bookmark, re, tagList) {
+
+    var match = false;
+    var _id = bookmark.id;
+    var tagListArray = tagList[_id];
+
+    if (bookmark.id != ROOTID && bookmark.title.length > 0) {
+
+        if (re.test(bookmark.title) || re.test(bookmark.url)) {
+
+            match = true;
+
+        } else if (tagListArray != null) {
+
+            var len = tagListArray.length;
+            for (var i = 0; i < len; i++) {
+                if (re.test(tagListArray[i])) {
+                    match = true;
+                    break;
+                }
+            }
+
+        }
+
+    }
+
+
+
+    if (isDirectory(bookmark)) {
+
+        // 正規表現に合致したら表示
+        if (match) {
+
+            var item = cloneFolder(bookmark);
+
+            if ($("#content_list .folder").length > 0) {
+                item.insertAfter($("#content_list .folder").last());
+            } else {
+                item.prependTo($("#content_list"));
+            }
+
+        }
+
+
+        if (hasChildren(bookmark)) {
+
+            bookmark.children.forEach(function (child) {
+
+                printBookmarksRecursivelyByAll(child, re, tagList);
+
+            });
+        }
+
+    } else {
+
+        // 正規表現に合致したらアイテムを表示
+        if (match) {
+            var item = cloneItem(bookmark);
+
+            item.appendTo($("#content_list"));
+
+        }
+
+    }
+
+}
+
 
 // イベントを入力に
 // コンテクストメニューを表示
@@ -347,13 +502,13 @@ function printContextMenu(e) {
     changePasteState();
 
     // アクティブを変更
-    if ($(e.target).closest(".handle").closest(".li_content").hasClass("selected")) {
+    if ($(e.target).closest(".handle").closest(".item").hasClass("selected")) {
 
-    } else if ($(e.target).closest(".handle").closest(".li_content").length > 0) {
+    } else if ($(e.target).closest(".handle").closest(".item").length > 0) {
 
         $(".selected").removeClass("selected");
         $(".active").removeClass("active");
-        $(e.target).closest(".li_content").addClass("selected active");
+        $(e.target).closest(".item").addClass("selected active");
 
     } else if (
         $(e.target).closest(".nub").hasClass("sidebar_item_container") ||

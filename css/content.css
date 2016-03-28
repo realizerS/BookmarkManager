@@ -97,6 +97,8 @@
 
 #search form #input_container input {
 
+    font-size:14px;
+
     width:100%;
     top: 10px;
     height:30px;
@@ -128,11 +130,22 @@
 }
 #search_scope_selector_container label {
 
+    position: absolute;
+
+    top: 13px;
+    left: 550px;
+
+
     font-size:14px;
     color: #fff;
 }
 
 #search_scope_selector_container select {
+
+    position: absolute;
+
+    top: 13px;
+    left: 620px;
 
     font-size:14px;
 
@@ -325,10 +338,10 @@
 
 /* フォルダとブックマークの情報 */
 .folder,
-.item {
+.bookmark {
 
     position: relative;
-    
+
     display: inline-block;
     float: left;
     height: 220px;
@@ -357,15 +370,17 @@
     vertical-align: middle;
 
 }
-/* itemのocticonはimgへ変更した */
+/* ブックマークのocticonは画像へ変更した */
 .folder .material-icons,
-.item .material-icons
+.bookmark .material-icons
 {
 
     position: absolute;
     left: 0;
     width: 100%;
     text-align: center;
+
+    cursor: pointer;
 
     font-size: 100px;
     color: #727272;
@@ -393,7 +408,7 @@
 
 }
 
-.item img {
+.bookmark .page_image {
 
     width: 200px;
     height: 150px;
@@ -405,9 +420,8 @@
     border-radius: 10px;
 
 }
-
 .folder .title,
-.item .title {
+.bookmark .title_container {
 
     position: relative;
 
@@ -438,31 +452,52 @@
     /*background:red;*/
 }
 
+.bookmark .fvc {
+
+    width: 14px;
+    height: 14px;
+
+    line-height: 14px;
+
+    vertical-align: middle;
+
+    margin-right:3px;
+
+    border:none;
+}
+
 .folder.selected .material-icons:not(.favorite),
-.item.selected .material-icons {
+.bookmark.selected .material-icons {
 
     color: #009688;
 
 }
 
-.item.selected img {
+.bookmark.selected .page_image {
 
     border: 3px solid #009688;
 
 }
 
 .folder.selected .title,
-.item.selected .title {
+.bookmark.selected .title_container {
 
     z-index: 3000;
 
     max-height: 10.1em;
     background: #009688;
     color: #fff;
+
+}
+
+.bookmark.selected .title {
+
+    color: #fff;
+
 }
 
 .folder .title:focus,
-.item .title:focus {
+.bookmark .title:focus {
 
     outline: none;
     border: 2px solid #009688;
